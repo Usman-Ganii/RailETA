@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RailETA | Dynamic Train ETA Forecast</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            🚆 Rail<span>ETA</span>
+        </div>
+
+        <div class="nav-links">
+            <a href="#">Dashboard</a>
+            <a href="#prediction">Predict ETA</a>
+            <a href="#history">History</a>
+            <a href="#about">About</a>
+        </div>
+    </nav>
+
+
+    <!-- Hero Section -->
+    <section class="hero">
+
+        <div class="hero-text">
+            <p class="tagline">AI-POWERED RAILWAY FORECASTING</p>
+
+            <h1>
+                Dynamic Train
+                <span>ETA Forecast</span>
+            </h1>
+
+            <p class="description">
+                Predict the expected arrival time of a train using
+                machine learning and real-time delay information.
+            </p>
+
+            <a href="#prediction" class="hero-button">
+                Predict Train ETA →
+            </a>
+        </div>
+
+        <div class="hero-card">
+            <div class="train-icon">🚆</div>
+
+            <h3>Live Prediction</h3>
+
+            <p>AI-based expected arrival forecasting</p>
+
+            <div class="mini-status">
+                <span></span>
+                Prediction System Online
+            </div>
+        </div>
+
+    </section>
+
+    <!-- LIVE TRAIN PREDICTION -->
+    <section class="live-section" id="livePrediction">
+
+        <div class="section-heading">
+            <p>LIVE RAILRADAR</p>
+            <h2>Live Train ETA Prediction</h2>
+        </div>
+
+        <div class="live-card">
+
+            <div class="live-search">
+
+                <label for="liveTrainNumber">
+                    Train Number
+                </label>
+
+                <div class="live-search-row">
+
+                    <input type="text" id="liveTrainNumber" placeholder="Enter train number e.g. 12919">
+
+                    <button type="button" id="livePredictBtn">
+                        Get Live Prediction
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Loading -->
+
+            <div id="liveLoading" style="display: none;">
+                Fetching live train data...
+            </div>
+
+
+            <!-- Live Result -->
+
+            <div id="liveResult" style="display: none;">
+
+                <div class="live-train-header">
+
+                    <div>
+                        <span>TRAIN</span>
+
+                        <h3 id="liveTrainName">
+                            --
+                        </h3>
+
+                        <p id="liveTrainNumberResult">
+                            --
+                        </p>
+                    </div>
+
+                    <span class="live-status-wrapper">
+
+                        <span class="live-indicator-dot"></span>
+
+                        <span id="liveStatus" class="status-badge">
+                            --
+                        </span>
+
+                    </span>
+
+                </div>
+
+                <div class="live-map-container">
+
+
+                    <h3>Live Train Location</h3>
+
+                    <div id="trainMap"></div>
+
+                </div>
+
+
+                <div class="live-info-grid">
+
+                    <div class="live-info-box">
+
+                        <span>Current Delay</span>
+
+                        <strong id="liveDelay">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="live-info-box">
+
+                        <span>Current Station</span>
+
+                        <strong id="liveCurrentStation">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="live-info-box">
+
+                        <span>Predicted Additional Delay</span>
+
+                        <strong id="liveAdditionalDelay">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="live-info-box">
+
+                        <span>Total Predicted Delay</span>
+
+                        <strong id="liveTotalDelay">
+                            --
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="live-eta">
+
+                    <span>AI Predicted ETA</span>
+
+                    <strong id="liveETA">
+                        --
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <!-- AI PREDICTION EXPLANATION -->
+
+            <section class="ai-explanation-section">
+
+                <div class="section-header">
+                    <div>
+                        <span class="section-label">
+                            AI INSIGHT
+                        </span>
+
+                        <h2>
+                            Why did AI predict this delay?
+                        </h2>
+
+                        <p id="aiExplanationSummary">
+                            Waiting for live prediction...
+                        </p>
+                    </div>
+                </div>
+
+                <div class="ai-explanation-grid" id="aiExplanationFactors">
+
+                    <div class="ai-explanation-empty">
+                        Run a live prediction to see
+                        the factors influencing the AI forecast.
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- Error -->
+
+            <div id="liveError" style="display: none;">
+                Unable to fetch live train data.
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- =========================================================
+     ETA PREDICTION TIMELINE
+========================================================= -->
+
+    <section class="eta-timeline-section" id="etaTimelineSection">
+
+        <div class="section-header">
+
+            <div>
+                <span class="section-label">
+                    DYNAMIC FORECAST
+                </span>
+
+                <h2>
+                    ETA Prediction Timeline
+                </h2>
+
+                <p>
+                    Station-by-station forecast based on the current
+                    train position, delay and AI prediction.
+                </p>
+            </div>
+
+            <div class="timeline-update-status" id="timelineUpdateStatus">
+                Waiting for live prediction
+            </div>
+
+        </div>
+
+
+        <!-- Journey summary -->
+
+        <div class="timeline-summary">
+
+            <div class="timeline-summary-item">
+
+                <span>
+                    Current Station
+                </span>
+
+                <strong id="timelineCurrentStation">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="timeline-summary-item">
+
+                <span>
+                    Next Station
+                </span>
+
+                <strong id="timelineNextStation">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="timeline-summary-item">
+
+                <span>
+                    Current Delay
+                </span>
+
+                <strong id="timelineCurrentDelay">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="timeline-summary-item">
+
+                <span>
+                    Predicted ETA
+                </span>
+
+                <strong id="timelineFinalEta">
+                    —
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- Forecast timeline -->
+
+        <div class="eta-timeline" id="etaTimeline">
+
+            <div class="timeline-empty">
+
+                <div class="timeline-empty-icon">
+                    ⏱
+                </div>
+
+                <h3>
+                    No forecast available
+                </h3>
+
+                <p>
+                    Enter a train number above and run
+                    Live Prediction to generate the timeline.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Dynamic Prediction Tracking -->
+    <section class="prediction-tracking-section" id="predictionTrackingSection">
+
+        <div class="section-header">
+            <div>
+                <span class="section-label">LIVE INTELLIGENCE</span>
+
+                <h2>Prediction Change Tracking</h2>
+
+                <p>
+                    Monitor how the AI forecast changes as new live train data arrives.
+                </p>
+            </div>
+
+            <div class="prediction-refresh-status">
+                <span class="refresh-dot" id="predictionRefreshDot">
+                </span>
+
+                <span id="predictionRefreshStatus">
+                    Waiting for prediction
+                </span>
+            </div>
+        </div>
+
+
+        <div class="prediction-change-grid">
+
+            <div class="prediction-change-card">
+
+                <span>Previous ETA</span>
+
+                <strong id="previousPredictionEta">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="prediction-change-card">
+
+                <span>Latest ETA</span>
+
+                <strong id="latestPredictionEta">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="prediction-change-card">
+
+                <span>ETA Change</span>
+
+                <strong id="predictionEtaChange">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="prediction-change-card">
+
+                <span>Delay Change</span>
+
+                <strong id="predictionDelayChange">
+                    —
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="prediction-update-info">
+
+            <div>
+
+                <span>Last prediction update</span>
+
+                <strong id="lastPredictionUpdate">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>Refresh interval</span>
+
+                <strong>
+                    30 seconds
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>Predictions tracked</span>
+
+                <strong id="predictionCount">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="prediction-trend-card">
+
+            <div class="trend-heading">
+
+                <div>
+
+                    <h3>Prediction Trend</h3>
+
+                    <p>
+                        Changes in predicted total delay during live tracking.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="prediction-chart-container">
+
+                <canvas id="predictionTrendChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Prediction Section -->
+    <section class="prediction-section" id="prediction">
+
+        <div class="section-heading">
+            <p>TRAIN ANALYSIS</p>
+            <h2>Predict Expected Arrival</h2>
+        </div>
+
+
+        <div class="prediction-container">
+
+            <!-- Input Card -->
+            <div class="input-card">
+
+                <h3>Train Information</h3>
+
+                <form id="predictionForm">
+
+                    <div class="form-group">
+                        <label>Train Name / Number</label>
+                        <select id="train_name" required>
+                            <option value="">Select a train</option>
+                        </select>
+                    </div>
+
+
+                    <div class="form-row">
+
+                        <div class="form-group">
+                            <label>Current Delay (minutes)</label>
+                            <input type="number" id="current_delay" min="0" placeholder="20" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Distance Remaining (km)</label>
+                            <input type="number" id="distance_remaining" min="0" placeholder="160" required>
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-row">
+
+                        <div class="form-group">
+                            <label>Stops Remaining</label>
+                            <input type="number" id="stops_remaining" min="0" placeholder="4" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Historical Avg. Delay</label>
+                            <input type="number" id="historical_avg_delay" min="0" placeholder="20" required>
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>Scheduled Arrival</label>
+
+                        <input type="datetime-local" id="scheduled_arrival" required>
+                    </div>
+
+
+                    <button type="submit" class="predict-button">
+                        Predict ETA 🚆
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <!-- Result Card -->
+            <div class="result-card">
+
+                <div class="result-header">
+                    <div>
+                        <p>AI PREDICTION</p>
+                        <h3 id="resultTrain">Waiting for input</h3>
+                    </div>
+
+                    <div class="status-badge" id="statusBadge">
+                        Ready
+                    </div>
+                </div>
+
+
+                <div class="eta-display">
+
+                    <span>EXPECTED ARRIVAL</span>
+
+                    <h1 id="predictedEta">
+                        --:--
+                    </h1>
+
+                    <p id="etaDate">
+                        Enter train information
+                    </p>
+
+                </div>
+
+
+                <div class="result-stats">
+
+                    <div class="stat">
+                        <span>Current Delay</span>
+                        <strong id="currentDelayResult">--</strong>
+                    </div>
+
+                    <div class="stat">
+                        <span>Additional Delay</span>
+                        <strong id="additionalDelayResult">--</strong>
+                    </div>
+
+                    <div class="stat">
+                        <span>Total Delay</span>
+                        <strong id="totalDelayResult">--</strong>
+                    </div>
+
+                </div>
+
+                <div class="prediction-factors">
+
+                    <h4>Prediction Factors</h4>
+
+                    <div class="factor">
+                        <span>Current Delay</span>
+                        <strong id="factorCurrentDelay">--</strong>
+                    </div>
+
+                    <div class="factor">
+                        <span>Distance Remaining</span>
+                        <strong id="factorDistance">--</strong>
+                    </div>
+
+                    <div class="factor">
+                        <span>Stops Remaining</span>
+                        <strong id="factorStops">--</strong>
+                    </div>
+
+                    <div class="factor">
+                        <span>Historical Avg. Delay</span>
+                        <strong id="factorHistorical">--</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="stats-section">
+
+        <div class="dashboard-stat">
+            <span>Total Predictions</span>
+            <strong id="totalPredictions">--</strong>
+        </div>
+
+        <div class="dashboard-stat">
+            <span>Average Delay</span>
+            <strong id="averageDelay">--</strong>
+        </div>
+
+        <div class="dashboard-stat">
+            <span>Latest Train</span>
+            <strong id="latestTrain">--</strong>
+        </div>
+
+        <div class="dashboard-stat">
+            <span>Latest ETA</span>
+            <strong id="latestEta">--</strong>
+        </div>
+
+    </section>
+
+    <section class="importance-section">
+
+        <div class="section-heading">
+            <p>MACHINE LEARNING INSIGHT</p>
+            <h2>Prediction Factors</h2>
+        </div>
+
+        <div class="importance-card">
+
+            <canvas id="importanceChart"></canvas>
+
+        </div>
+
+    </section>
+    <!-- =========================================================
+     MODEL PERFORMANCE
+========================================================= -->
+
+    <section class="model-performance-section">
+
+        <div class="section-header">
+
+            <div>
+                <span class="section-label">
+                    MACHINE LEARNING
+                </span>
+
+                <h2>
+                    AI Model Performance
+                </h2>
+
+                <p>
+                    Evaluation of the RailETA prediction model
+                    using labelled historical data.
+                </p>
+            </div>
+
+            <div class="model-status" id="modelPerformanceStatus">
+                Checking model...
+            </div>
+
+        </div>
+
+
+        <!-- Performance cards -->
+
+        <div class="performance-grid">
+
+            <!-- MAE -->
+
+            <div class="performance-card">
+
+                <div class="performance-icon">
+                    MAE
+                </div>
+
+                <div class="performance-content">
+
+                    <span class="performance-title">
+                        Mean Absolute Error
+                    </span>
+
+                    <strong id="modelMAE">
+                        —
+                    </strong>
+
+                    <small>
+                        minutes
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- RMSE -->
+
+            <div class="performance-card">
+
+                <div class="performance-icon">
+                    RMSE
+                </div>
+
+                <div class="performance-content">
+
+                    <span class="performance-title">
+                        Root Mean Square Error
+                    </span>
+
+                    <strong id="modelRMSE">
+                        —
+                    </strong>
+
+                    <small>
+                        minutes
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- R2 -->
+
+            <div class="performance-card">
+
+                <div class="performance-icon">
+                    R²
+                </div>
+
+                <div class="performance-content">
+
+                    <span class="performance-title">
+                        R² Score
+                    </span>
+
+                    <strong id="modelR2">
+                        —
+                    </strong>
+
+                    <small>
+                        model fit
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- Samples -->
+
+            <div class="performance-card">
+
+                <div class="performance-icon">
+                    N
+                </div>
+
+                <div class="performance-content">
+
+                    <span class="performance-title">
+                        Evaluation Samples
+                    </span>
+
+                    <strong id="modelSamples">
+                        —
+                    </strong>
+
+                    <small>
+                        test records
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Model information -->
+
+        <div class="model-info-card">
+
+            <div class="model-info-header">
+
+                <div>
+                    <h3>
+                        Model Configuration
+                    </h3>
+
+                    <p>
+                        Configuration of the deployed ETA prediction model.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="model-info-grid">
+
+                <div class="model-info-item">
+
+                    <span>
+                        Algorithm
+                    </span>
+
+                    <strong id="modelType">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="model-info-item">
+
+                    <span>
+                        Estimators
+                    </span>
+
+                    <strong id="modelEstimators">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="model-info-item">
+
+                    <span>
+                        Input Features
+                    </span>
+
+                    <strong id="modelFeatures">
+                        —
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Actual vs predicted -->
+
+        <div class="performance-chart-card">
+
+            <div class="chart-card-header">
+
+                <div>
+
+                    <h3>
+                        Actual vs Predicted Additional Delay
+                    </h3>
+
+                    <p>
+                        Comparison between observed and AI-predicted
+                        additional delay.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="performance-chart-wrapper">
+
+                <canvas id="modelPerformanceChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+        <!-- Feature importance -->
+
+        <div class="model-feature-card">
+
+            <div class="chart-card-header">
+
+                <div>
+
+                    <h3>
+                        Model Feature Contribution
+                    </h3>
+
+                    <p>
+                        Relative importance of each input feature
+                        used by the Random Forest model.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div id="modelFeatureImportance" class="model-feature-list">
+                <div class="model-empty-state">
+                    Loading feature importance...
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Evaluation unavailable message -->
+
+        <div id="modelEvaluationNotice" class="model-evaluation-notice" style="display: none;">
+
+            <div class="notice-icon">
+                !
+            </div>
+
+            <div>
+
+                <h3>
+                    Model evaluation data required
+                </h3>
+
+                <p id="modelEvaluationNoticeText">
+                    A labelled evaluation dataset is required
+                    to calculate MAE, RMSE and R².
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="history-section" id="history">
+
+        <div class="section-heading">
+            <p>PREDICTION RECORDS</p>
+            <h2>Recent Prediction History</h2>
+        </div>
+
+        <div class="history-card">
+
+            <div id="historyContainer">
+                <p class="history-loading">Loading prediction history...</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+
+        <p>ABOUT THE PROJECT</p>
+
+        <h2>Intelligent Railway ETA Prediction</h2>
+
+        <p>
+            RailETA uses machine learning to estimate additional train
+            delays and calculate a dynamic expected arrival time.
+        </p>
+
+    </section>
+
+
+    <footer>
+        <p>RailETA • Dynamic Train ETA Forecast</p>
+    </footer>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+
+
+</body>
+
+</html>
